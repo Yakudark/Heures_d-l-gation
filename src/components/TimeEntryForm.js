@@ -56,6 +56,7 @@ const TimeEntryForm = ({
             Délégation
           </Text>
         </TouchableOpacity>
+
         <TouchableOpacity
           style={[styles.typeButton, type === 'chsct' && styles.selectedType]}
           onPress={() => setType('chsct')}
@@ -65,6 +66,18 @@ const TimeEntryForm = ({
             type === 'chsct' && styles.selectedTypeText
           ]}>
             CHSCT
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.typeButton, type === 'reunion' && styles.selectedType]}
+          onPress={() => setType('reunion')}
+        >
+          <Text style={[
+            styles.typeText,
+            type === 'reunion' && styles.selectedTypeText
+          ]}>
+            Réunion
           </Text>
         </TouchableOpacity>
       </View>

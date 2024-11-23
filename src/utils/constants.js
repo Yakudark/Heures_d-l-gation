@@ -7,14 +7,27 @@ export const calculateTotalHours = (entriesList, selectedMonth, selectedYear) =>
   return entriesList
     .filter(entry => {
       const entryDate = new Date(entry.date);
-      return entryDate.getMonth() === selectedMonth && 
-             entryDate.getFullYear() === selectedYear;
+      return (
+        entryDate.getMonth() === selectedMonth &&
+        entryDate.getFullYear() === selectedYear
+      );
     })
     .reduce(
-      (acc, entry) => ({
-        ...acc,
-        [entry.type]: acc[entry.type] + entry.hours
-      }),
-      { delegation: 0, chsct: 0 }
+      (totals, entry) => {
+        const startTime = new Date(entry.startTime);
+        const endTime = new Date(entry.endTime);
+        const hours = (endTime - startTime) / (1000 * 60 * 60);
+
+        if (entry.type === 'delegation') {
+          totals.delegation += hours;
+        } else if (entry.type === 'chsct') {
+          totals.chsct += hours;
+        } else if (entry.type === 'reunion') {
+          totals.reunion += hours;
+        }
+
+        return totals;
+      },
+      { delegation: 0, chsct: 0, reunion: 0 }
     );
 };

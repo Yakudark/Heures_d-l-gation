@@ -69,19 +69,19 @@ export const styles = StyleSheet.create({
   },
   entriesList: {
     flex: 1,
+    paddingHorizontal: 15,
+    paddingBottom: 80,
+    marginBottom: 20,
   },
   entryCard: {
     backgroundColor: '#fff',
-    borderRadius: 10,
+    borderRadius: 12,
     padding: 15,
-    marginBottom: 10,
+    marginBottom: 15,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 3,
+    shadowRadius: 4,
     elevation: 3,
   },
   entryHeader: {
@@ -97,38 +97,50 @@ export const styles = StyleSheet.create({
   },
   entryActions: {
     flexDirection: 'row',
+    gap: 10,
+  },
+  actionButton: {
+    padding: 5,
+  },
+  entryDetails: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
-  editButton: {
-    padding: 8,
-    marginRight: 8,
+  entryTime: {
+    flex: 1,
   },
-  deleteButton: {
-    padding: 8,
-  },
-  editButtonText: {
-    fontSize: 18,
-    color: '#007AFF',
-  },
-  deleteButtonText: {
-    fontSize: 24,
-    color: '#ff3b30',
-    marginTop: -3,
-  },
-  entryType: {
+  entryTimeText: {
     fontSize: 15,
     color: '#666',
-    marginBottom: 5,
   },
-  entryTime: {
-    fontSize: 15,
-    color: '#333',
-    marginBottom: 5,
+  entryType: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 15,
   },
-  entryHours: {
-    fontSize: 16,
+  delegationType: {
+    backgroundColor: 'rgba(0, 122, 255, 0.1)',
+  },
+  chsctType: {
+    backgroundColor: 'rgba(52, 199, 89, 0.1)',
+  },
+  reunionType: {
+    backgroundColor: 'rgba(88, 86, 214, 0.1)',
+  },
+  entryTypeText: {
+    fontSize: 14,
     fontWeight: '600',
-    color: '#34c759',
+    color: '#333',
+  },
+  delegationTypeText: {
+    color: '#007AFF',
+  },
+  chsctTypeText: {
+    color: '#34C759',
+  },
+  reunionTypeText: {
+    color: '#5856D6',
   },
   badgeContainer: {
     paddingHorizontal: 8,
@@ -186,22 +198,25 @@ export const styles = StyleSheet.create({
   typeSelector: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 15,
+    marginBottom: 20,
+    paddingHorizontal: 15,
   },
   typeButton: {
     flex: 1,
-    padding: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: '#f0f0f0',
+    paddingVertical: 10,
+    paddingHorizontal: 10,
     borderRadius: 8,
-    marginHorizontal: 3,
+    marginHorizontal: 4,
+    alignItems: 'center',
   },
   selectedType: {
     backgroundColor: '#007AFF',
   },
   typeText: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#666',
+    textAlign: 'center',
   },
   selectedTypeText: {
     color: '#fff',
@@ -410,64 +425,163 @@ export const styles = StyleSheet.create({
     marginLeft: 5,
     fontWeight: '500',
   },
-  entriesList: {
+  // Styles pour les statistiques
+  statsContainer: {
     flex: 1,
-    padding: 15,
+    padding: 20,
+    paddingBottom: 30,
+    backgroundColor: '#f8f8f8',
   },
-  entryCard: {
+  statsSection: {
     backgroundColor: '#fff',
-    borderRadius: 12,
+    borderRadius: 15,
     padding: 15,
-    marginBottom: 10,
+    marginBottom: 20,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
   },
-  entryHeader: {
+  statsSectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+  chartContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    marginHorizontal: 10,
+  },
+  chart: {
+    borderRadius: 15,
+    marginVertical: 8,
+  },
+  statsGrid: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 10,
+    gap: 15,
   },
-  entryDate: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#007AFF',
-  },
-  entryActions: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  actionButton: {
-    padding: 5,
-  },
-  entryDetails: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  entryTime: {
+  statsCard: {
     flex: 1,
+    backgroundColor: '#f8f8f8',
+    borderRadius: 12,
+    padding: 15,
+    alignItems: 'center',
   },
-  entryTimeText: {
+  statsLabel: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 8,
+  },
+  statsValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 4,
+  },
+  statsPercent: {
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  warningText: {
+    color: '#ff3b30',
+  },
+  goodText: {
+    color: '#34c759',
+  },
+  statsRemaining: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 4,
+  },
+  statsInfo: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  // Styles pour le toggle de vue
+  viewToggle: {
+    flexDirection: 'row',
+    backgroundColor: '#f0f0f0',
+    borderRadius: 10,
+    padding: 4,
+    marginHorizontal: 15,
+    marginBottom: 15,
+  },
+  toggleButton: {
+    flex: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+  },
+  toggleButtonActive: {
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  toggleButtonText: {
     fontSize: 15,
+    textAlign: 'center',
     color: '#666',
   },
-  entryType: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 15,
-  },
-  delegationType: {
-    backgroundColor: 'rgba(0, 122, 255, 0.1)',
-  },
-  chsctType: {
-    backgroundColor: 'rgba(52, 199, 89, 0.1)',
-  },
-  entryTypeText: {
-    fontSize: 14,
+  toggleButtonTextActive: {
+    color: '#007AFF',
     fontWeight: '600',
+  },
+  statsTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 15,
+  },
+  halfWidth: {
+    width: '48%',
+  },
+  fullWidth: {
+    width: '100%',
+    marginBottom: 15,
+  },
+  hoursSummaryContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 15,
+    marginHorizontal: 15,
+    marginBottom: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  hoursSummaryRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  hoursSummaryItem: {
+    flex: 1,
+    alignItems: 'center',
+    paddingHorizontal: 5,
+  },
+  hoursSummaryLabel: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 4,
+  },
+  hoursSummaryValue: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+  },
+  hoursSummaryPercent: {
+    fontSize: 12,
+    marginTop: 2,
   },
 });

@@ -3,9 +3,9 @@ import { View, Text } from 'react-native';
 import { styles } from '../styles/styles';
 import { DELEGATION_HOURS, CHSCT_HOURS } from '../utils/constants';
 
-const HoursSummary = ({ monthlyHours, selectedMonth, selectedYear }) => {
-  const delegationRemaining = DELEGATION_HOURS - monthlyHours.delegation;
-  const chsctRemaining = CHSCT_HOURS - monthlyHours.chsct;
+const HoursSummary = ({ monthlyHours = { delegation: 0, chsct: 0, reunion: 0 }, selectedMonth, selectedYear }) => {
+  const delegationRemaining = Math.max(0, DELEGATION_HOURS - monthlyHours.delegation);
+  const chsctRemaining = Math.max(0, CHSCT_HOURS - monthlyHours.chsct);
 
   const monthNames = [
     'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
@@ -56,6 +56,15 @@ const HoursSummary = ({ monthlyHours, selectedMonth, selectedYear }) => {
             chsctRemaining < 0 ? styles.warningValue : styles.goodValue
           ]}>
             (Reste : {chsctRemaining.toFixed(1)}h)
+          </Text>
+        </View>
+      </View>
+      
+      <View style={styles.summaryRow}>
+        <Text style={styles.summaryLabel}>Réunion :</Text>
+        <View style={styles.summaryValues}>
+          <Text style={styles.summaryValue}>
+            {(monthlyHours.reunion || 0).toFixed(1)}h
           </Text>
         </View>
       </View>
