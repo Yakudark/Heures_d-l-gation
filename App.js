@@ -66,12 +66,38 @@ export default function App() {
   };
 
   const startEditing = (entry) => {
-    setEditingEntry(entry);
-    setDate(new Date(entry.date));
-    setstart_time(new Date(entry.start_time));
-    setend_time(new Date(entry.end_time));
+    console.log('Début de l\'édition de l\'entrée:', entry);
+    
+    // Conversion de la date
+    const entryDate = new Date(entry.date);
+    
+    // Conversion des heures
+    const [startHours, startMinutes] = entry.start_time.split(':');
+    const [endHours, endMinutes] = entry.end_time.split(':');
+    
+    const startTime = new Date();
+    startTime.setHours(parseInt(startHours), parseInt(startMinutes), 0);
+    
+    const endTime = new Date();
+    endTime.setHours(parseInt(endHours), parseInt(endMinutes), 0);
+    
+    // Mise à jour du state
+    setDate(entryDate);
+    setstart_time(startTime);
+    setend_time(endTime);
     setType(entry.type);
+    setEditingEntry(entry);
+    
+    // Redirection vers le formulaire
+    setShowHistory(false);
     setShowDashboard(false);
+    
+    console.log('État après conversion:', {
+      date: entryDate,
+      start_time: startTime,
+      end_time: endTime,
+      type: entry.type
+    });
   };
 
   const handleSubmit = async () => {
@@ -93,12 +119,37 @@ export default function App() {
       );
       return;
     }
+
+    // Vérifier que la date n'est pas dans le futur
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const selectedDate = new Date(date);
+    selectedDate.setHours(0, 0, 0, 0);
+
+    if (selectedDate > today) {
+      Alert.alert(
+        'Erreur',
+        'La date ne peut pas être dans le futur',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
   
     const diffHours = (end_time.getTime() - start_time.getTime()) / (1000 * 60 * 60);
+
+    // Vérifier que le nombre d'heures est raisonnable
+    if (diffHours <= 0 || diffHours > 24) {
+      Alert.alert(
+        'Erreur',
+        'Le nombre d\'heures doit être entre 0 et 24',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
   
     // Formatage des dates et heures pour Supabase
     const formatDate = (date) => {
-      return date.toISOString().split('T')[0]; // Retourne uniquement la partie date "YYYY-MM-DD"
+      return date.toISOString().split('T')[0];
     };
 
     const formatTime = (date) => {
@@ -110,46 +161,70 @@ export default function App() {
       });
     };
 
-    // Créer une nouvelle entrée sans ID (Supabase le générera)
+    // Créer une nouvelle entrée
     const newEntry = {
       date: formatDate(date),
       start_time: formatTime(start_time),
       end_time: formatTime(end_time),
-      hours: parseFloat(diffHours.toFixed(2)), // Arrondir à 2 décimales
+      hours: parseFloat(diffHours.toFixed(2)),
       type,
-      comment: '' // Ajouter un champ comment vide par défaut
+      comment: editingEntry?.comment || ''
     };
 
     console.log('Envoi de la nouvelle entrée:', newEntry);
   
     try {
-      // Envoi des données à Supabase
-      const { data, error } = await supabase
-        .from('entries')
-        .insert([newEntry])
-        .select()
-        .single();
-  
+      let response;
+      if (editingEntry) {
+        // Mise à jour d'une entrée existante
+        response = await supabase
+          .from('entries')
+          .update(newEntry)
+          .eq('id', editingEntry.id)
+          .select()
+          .single();
+      } else {
+        // Création d'une nouvelle entrée
+        response = await supabase
+          .from('entries')
+          .insert([newEntry])
+          .select()
+          .single();
+      }
+
+      const { data, error } = response;
+
       if (error) {
+        console.error('Erreur Supabase:', error);
         throw error;
       }
-  
-      // Utiliser l'entrée retournée par Supabase (avec l'ID généré)
-      const newEntries = [...entries, data];
-      const newHours = calculateTotalHours(newEntries, selectedMonth, selectedYear);
-      setEntries(newEntries);
+
+      console.log('Réponse Supabase:', data);
+
+      if (editingEntry) {
+        // Mise à jour de l'entrée dans le state
+        setEntries(entries.map(e => e.id === editingEntry.id ? data : e));
+      } else {
+        // Ajout de la nouvelle entrée au state
+        setEntries([...entries, data]);
+      }
+
+      // Mise à jour des heures totales
+      const newHours = calculateTotalHours([...entries, data], selectedMonth, selectedYear);
       setMonthlyHours(newHours);
-      saveData(newHours, newEntries);
-  
-      console.log('Entrée ajoutée avec succès:', data);
-      Alert.alert('Succès', 'Les heures ont été enregistrées');
+      
+      // Sauvegarde locale
+      saveData(newHours, [...entries, data]);
+      
+      // Réinitialisation du formulaire
+      resetForm();
+      setEditingEntry(null);
+      
+      Alert.alert('Succès', editingEntry ? 'Entrée modifiée' : 'Entrée ajoutée');
     } catch (error) {
-      console.error('Erreur lors de l\'ajout de l\'entrée:', error);
-      Alert.alert('Erreur', 'Erreur lors de l\'enregistrement des données.');
+      console.error(editingEntry ? 'Erreur lors de la modification:' : 'Erreur lors de l\'ajout de l\'entrée:', error);
+      Alert.alert('Erreur', 'Une erreur est survenue lors de l\'enregistrement');
     }
-  
-    // Réinitialisation du formulaire après soumission
-    resetForm();
   };
 
   const resetForm = () => {
