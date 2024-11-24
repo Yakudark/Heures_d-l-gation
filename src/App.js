@@ -1,127 +1,114 @@
-import React, { useState, useEffect } from 'react';
-import { View, Alert } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { styles } from './styles/styles';
+import React, { useEffect, useState } from 'react';
+import { View, StyleSheet, Alert, Text } from 'react-native';
 import TimeEntryForm from './components/TimeEntryForm';
 import HistoryView from './components/HistoryView';
-import Dashboard from './components/Dashboard';
-import { ENTRIES_KEY, calculateTotalHours } from './utils/constants';
+import { entriesService } from './services/supabase';
 
 export default function App() {
+  const [currentView, setCurrentView] = useState('form');
   const [entries, setEntries] = useState([]);
   const [editingEntry, setEditingEntry] = useState(null);
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [showHistory, setShowHistory] = useState(false);
-  const [monthlyHours, setMonthlyHours] = useState({
-    delegation: 0,
-    chsct: 0,
-    reunion: 0
-  });
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Chargement initial des entrées
   useEffect(() => {
-    loadEntries();
+    loadData();
   }, []);
 
-  // Mise à jour des heures mensuelles quand les entrées changent
-  useEffect(() => {
-    const totals = calculateTotalHours(entries, selectedMonth, selectedYear);
-    setMonthlyHours(totals);
-  }, [entries, selectedMonth, selectedYear]);
-
-  const loadEntries = async () => {
+  const loadData = async () => {
     try {
-      const storedEntries = await AsyncStorage.getItem(ENTRIES_KEY);
-      if (storedEntries) {
-        setEntries(JSON.parse(storedEntries));
-      }
+      setIsLoading(true);
+      const data = await entriesService.getEntries();
+      console.log('Données chargées depuis Supabase:', data);
+      setEntries(data || []);
     } catch (error) {
-      console.error('Erreur lors du chargement des entrées:', error);
-    }
-  };
-
-  const saveEntries = async (newEntries) => {
-    try {
-      await AsyncStorage.setItem(ENTRIES_KEY, JSON.stringify(newEntries));
-      setEntries(newEntries);
-    } catch (error) {
-      console.error('Erreur lors de la sauvegarde des entrées:', error);
-    }
-  };
-
-  const handleSubmit = (entry) => {
-    let newEntries;
-    if (editingEntry) {
-      // Modification d'une entrée existante
-      newEntries = entries.map(e => 
-        e.id === editingEntry.id ? { ...entry, id: editingEntry.id } : e
+      console.error('Erreur de chargement:', error);
+      Alert.alert(
+        'Erreur',
+        'Impossible de charger les données depuis Supabase'
       );
-      setEditingEntry(null);
-    } else {
-      // Ajout d'une nouvelle entrée
-      newEntries = [...entries, { ...entry, id: Date.now().toString() }];
+    } finally {
+      setIsLoading(false);
     }
-    saveEntries(newEntries);
   };
 
-  const handleDelete = (entryId) => {
-    Alert.alert(
-      "Confirmation",
-      "Voulez-vous vraiment supprimer cette entrée ?",
-      [
-        {
-          text: "Annuler",
-          style: "cancel"
-        },
-        {
-          text: "Supprimer",
-          onPress: () => {
-            const newEntries = entries.filter(entry => entry.id !== entryId);
-            saveEntries(newEntries);
-          },
-          style: "destructive"
-        }
-      ]
-    );
+  const handleSave = async (entry) => {
+    try {
+      let savedEntry;
+      
+      if (editingEntry) {
+        savedEntry = await entriesService.updateEntry(editingEntry.id, entry);
+        setEntries(entries.map(e => e.id === editingEntry.id ? savedEntry : e));
+      } else {
+        savedEntry = await entriesService.createEntry(entry);
+        setEntries([savedEntry, ...entries]);
+      }
+      
+      setEditingEntry(null);
+      Alert.alert('Succès', 'Entrée sauvegardée dans Supabase');
+    } catch (error) {
+      console.error('Erreur de sauvegarde:', error);
+      Alert.alert(
+        'Erreur',
+        'Impossible de sauvegarder l\'entrée dans Supabase'
+      );
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await entriesService.deleteEntry(id);
+      setEntries(entries.filter(entry => entry.id !== id));
+      Alert.alert('Succès', 'Entrée supprimée de Supabase');
+    } catch (error) {
+      console.error('Erreur de suppression:', error);
+      Alert.alert(
+        'Erreur',
+        'Impossible de supprimer l\'entrée de Supabase'
+      );
+    }
   };
 
   const handleEdit = (entry) => {
     setEditingEntry(entry);
-    setShowHistory(false);
+    setCurrentView('form');
   };
 
-  if (showHistory) {
+  const handleClose = () => {
+    setCurrentView('form');
+    setEditingEntry(null);
+  };
+
+  if (isLoading) {
     return (
-      <HistoryView
-        entries={entries}
-        selectedMonth={selectedMonth}
-        selectedYear={selectedYear}
-        monthlyHours={monthlyHours}
-        onBack={() => setShowHistory(false)}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
+      <View style={styles.container}>
+        <Text>Chargement des données depuis Supabase...</Text>
+      </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <TimeEntryForm
-        handleSubmit={handleSubmit}
-        editingEntry={editingEntry}
-        cancelEditing={() => setEditingEntry(null)}
-      />
-      <Dashboard
-        entries={entries}
-        monthlyHours={monthlyHours}
-        selectedMonth={selectedMonth}
-        selectedYear={selectedYear}
-        setSelectedMonth={setSelectedMonth}
-        setSelectedYear={setSelectedYear}
-        startEditing={handleEdit}
-        deleteEntry={handleDelete}
-      />
+      {currentView === 'form' ? (
+        <TimeEntryForm
+          onSave={handleSave}
+          onViewHistory={() => setCurrentView('history')}
+          editingEntry={editingEntry}
+        />
+      ) : (
+        <HistoryView
+          entries={entries}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onClose={handleClose}
+        />
+      )}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+});

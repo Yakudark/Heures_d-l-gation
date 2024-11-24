@@ -1,51 +1,73 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { styles } from '../styles/styles';
 import HoursSummary from './HoursSummary';
-import StatsView from './StatsView';
+import EntryList from './EntryList';
 
-const HistoryView = ({ 
-  entries, 
-  selectedMonth, 
-  selectedYear, 
-  monthlyHours,
-  onBack,
-  onEdit,
-  onDelete 
-}) => {
-  const [showStats, setShowStats] = useState(false);
+console.log('====================================');
+console.log('HISTORY VIEW - RENDERING');
+console.log('====================================');
 
-  const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('fr-FR');
-  };
+const HistoryView = ({ entries, onEdit, onDelete, onBack }) => {
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [monthlyHours, setMonthlyHours] = useState({
+    delegation: 0,
+    chsct: 0,
+    reunion: 0
+  });
 
-  const formatTime = (date) => {
-    return new Date(date).toLocaleTimeString('fr-FR', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
-  };
+  useEffect(() => {
+    console.log('====================================');
+    console.log('HISTORY VIEW - ENTRIES RECEIVED:', entries?.length || 0);
+    console.log('ENTRIES DATA:', JSON.stringify(entries, null, 2));
+    console.log('====================================');
+  }, [entries]);
+
+  useEffect(() => {
+    if (entries && entries.length > 0) {
+      const filteredEntries = entries.filter(entry => {
+        const entryDate = new Date(entry.date);
+        return (
+          entryDate.getMonth() === selectedMonth &&
+          entryDate.getFullYear() === selectedYear
+        );
+      });
+
+      const hours = {
+        delegation: 0,
+        chsct: 0,
+        reunion: 0
+      };
+
+      filteredEntries.forEach(entry => {
+        if (entry.type && entry.hours) {
+          hours[entry.type] += parseFloat(entry.hours) || 0;
+        }
+      });
+
+      setMonthlyHours(hours);
+    }
+  }, [entries, selectedMonth, selectedYear]);
 
   const months = [
     'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
     'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
   ];
 
-  // Filtrer les entrées pour le mois et l'année sélectionnés
-  const filteredEntries = entries.filter(entry => {
+  const filteredEntries = entries?.filter(entry => {
+    if (!entry || !entry.date) return false;
     const entryDate = new Date(entry.date);
-    return entryDate.getMonth() === selectedMonth && 
-           entryDate.getFullYear() === selectedYear;
-  });
+    return (
+      entryDate.getMonth() === selectedMonth &&
+      entryDate.getFullYear() === selectedYear
+    );
+  }) || [];
 
   return (
     <View style={styles.historyContainer}>
       <View style={styles.historyHeader}>
-        <Text style={styles.historyTitle}>
-          {months[selectedMonth]} {selectedYear}
-        </Text>
-        
         <TouchableOpacity
           style={styles.backButton}
           onPress={onBack}
@@ -53,94 +75,50 @@ const HistoryView = ({
           <Ionicons name="arrow-back" size={24} color="#007AFF" />
           <Text style={styles.backButtonText}>Retour</Text>
         </TouchableOpacity>
-      </View>
 
-      <HoursSummary 
-        monthlyHours={monthlyHours}
-        selectedMonth={selectedMonth}
-        selectedYear={selectedYear}
-      />
-
-      <View style={styles.viewToggle}>
-        <TouchableOpacity
-          style={[styles.toggleButton, !showStats && styles.toggleButtonActive]}
-          onPress={() => setShowStats(false)}
-        >
-          <Text style={[styles.toggleButtonText, !showStats && styles.toggleButtonTextActive]}>
-            Liste
+        <View style={styles.monthNavigation}>
+          <TouchableOpacity
+            style={styles.monthButton}
+            onPress={() => {
+              if (selectedMonth === 0) {
+                setSelectedMonth(11);
+                setSelectedYear(selectedYear - 1);
+              } else {
+                setSelectedMonth(selectedMonth - 1);
+              }
+            }}
+          >
+            <Ionicons name="chevron-back" size={24} color="#007AFF" />
+          </TouchableOpacity>
+          
+          <Text style={styles.historyTitle}>
+            {months[selectedMonth]} {selectedYear}
           </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.toggleButton, showStats && styles.toggleButtonActive]}
-          onPress={() => setShowStats(true)}
-        >
-          <Text style={[styles.toggleButtonText, showStats && styles.toggleButtonTextActive]}>
-            Statistiques
-          </Text>
-        </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={styles.monthButton}
+            onPress={() => {
+              if (selectedMonth === 11) {
+                setSelectedMonth(0);
+                setSelectedYear(selectedYear + 1);
+              } else {
+                setSelectedMonth(selectedMonth + 1);
+              }
+            }}
+          >
+            <Ionicons name="chevron-forward" size={24} color="#007AFF" />
+          </TouchableOpacity>
+        </View>
       </View>
 
-      <View style={{ flex: 1 }}>
-        {showStats ? (
-          <ScrollView style={styles.statsContainer}>
-            <StatsView
-              entries={entries}
-              selectedMonth={selectedMonth}
-              selectedYear={selectedYear}
-            />
-          </ScrollView>
-        ) : (
-          <ScrollView style={styles.entriesList}>
-            {filteredEntries
-              .sort((a, b) => new Date(b.date) - new Date(a.date))
-              .map((entry, index) => (
-                <View key={index} style={styles.entryCard}>
-                  <View style={styles.entryHeader}>
-                    <Text style={styles.entryDate}>{formatDate(entry.date)}</Text>
-                    <View style={styles.entryActions}>
-                      <TouchableOpacity
-                        style={styles.actionButton}
-                        onPress={() => onEdit(entry)}
-                      >
-                        <Ionicons name="pencil" size={20} color="#007AFF" />
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={styles.actionButton}
-                        onPress={() => onDelete(entry.id)}
-                      >
-                        <Ionicons name="trash" size={20} color="#FF3B30" />
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-
-                  <View style={styles.entryDetails}>
-                    <View style={styles.entryTime}>
-                      <Text style={styles.entryTimeText}>
-                        {formatTime(entry.startTime)} - {formatTime(entry.endTime)}
-                      </Text>
-                    </View>
-                    <View style={[
-                      styles.entryType,
-                      entry.type === 'delegation' ? styles.delegationType : 
-                      entry.type === 'chsct' ? styles.chsctType :
-                      styles.reunionType
-                    ]}>
-                      <Text style={[
-                        styles.entryTypeText,
-                        entry.type === 'delegation' ? styles.delegationTypeText : 
-                        entry.type === 'chsct' ? styles.chsctTypeText :
-                        styles.reunionTypeText
-                      ]}>
-                        {entry.type === 'delegation' ? 'Délégation' : 
-                         entry.type === 'chsct' ? 'CHSCT' : 'Réunion'}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-              ))}
-          </ScrollView>
-        )}
-      </View>
+      <ScrollView style={styles.historyContent}>
+        <HoursSummary monthlyHours={monthlyHours} />
+        <EntryList
+          entries={filteredEntries}
+          onEdit={onEdit}
+          onDelete={onDelete}
+        />
+      </ScrollView>
     </View>
   );
 };

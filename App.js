@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createClient } from '@supabase/supabase-js'; // Importation de Supabase
 import TimeEntryForm from './src/components/TimeEntryForm';
 import PeriodSelector from './src/components/PeriodSelector';
 import HistoryView from './src/components/HistoryView';
@@ -13,6 +14,11 @@ import {
   CHSCT_HOURS,
   calculateTotalHours
 } from './src/utils/constants';
+
+// Création d'un client Supabase avec les variables d'environnement
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function App() {
   const [date, setDate] = useState(null);
@@ -35,7 +41,6 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    // Recalculer les heures mensuelles quand le mois/année change ou quand les entrées changent
     const newHours = calculateTotalHours(entries, selectedMonth, selectedYear);
     setMonthlyHours(newHours);
   }, [selectedMonth, selectedYear, entries]);
@@ -74,7 +79,8 @@ export default function App() {
     setShowDashboard(false);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    // Vérification des champs
     if (!date || !startTime || !endTime) {
       Alert.alert(
         'Erreur',
@@ -83,7 +89,7 @@ export default function App() {
       );
       return;
     }
-
+  
     if (endTime.getTime() <= startTime.getTime()) {
       Alert.alert(
         'Erreur',
@@ -92,46 +98,45 @@ export default function App() {
       );
       return;
     }
-
+  
     const diffHours = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
-    
-    if (editingEntry) {
-      const newEntries = entries.map(entry => 
-        entry.id === editingEntry.id 
-          ? {
-              ...entry,
-              date: date.toISOString(),
-              startTime: startTime.toISOString(),
-              endTime: endTime.toISOString(),
-              hours: diffHours,
-              type
-            }
-          : entry
-      );
-      setEntries(newEntries);
-      const newHours = calculateTotalHours(newEntries, selectedMonth, selectedYear);
-      setMonthlyHours(newHours);
-      saveData(newHours, newEntries);
-      setEditingEntry(null);
-      resetForm();
-      Alert.alert('Succès', 'Les modifications ont été enregistrées');
-    } else {
-      const newEntry = {
-        id: Date.now().toString(),
-        date: date.toISOString(),
-        startTime: startTime.toISOString(),
-        endTime: endTime.toISOString(),
-        hours: diffHours,
-        type,
-      };
-      const newEntries = [...entries, newEntry];
-      const newHours = calculateTotalHours(newEntries, selectedMonth, selectedYear);
-      setEntries(newEntries);
-      setMonthlyHours(newHours);
-      saveData(newHours, newEntries);
-      resetForm();
+  
+    // Créer une nouvelle entrée
+    const newEntry = {
+      id: Date.now().toString(),
+      date: date.toISOString(),
+      startTime: startTime.toISOString(),
+      endTime: endTime.toISOString(),
+      hours: diffHours,
+      type,
+    };
+  
+    // Ajouter la nouvelle entrée à l'historique
+    const newEntries = [...entries, newEntry];
+    const newHours = calculateTotalHours(newEntries, selectedMonth, selectedYear);
+    setEntries(newEntries);
+    setMonthlyHours(newHours);
+    saveData(newHours, newEntries);
+  
+    try {
+      // Envoi des données à Supabase
+      const { data, error } = await supabase
+        .from('entries')  // Nom de la table dans Supabase
+        .insert([newEntry]);  // Insère un tableau d'objets, ici avec une seule entrée
+  
+      if (error) {
+        throw error;
+      }
+  
+      console.log('Entrée ajoutée avec succès:', data);
       Alert.alert('Succès', 'Les heures ont été enregistrées');
+    } catch (error) {
+      console.error('Erreur lors de l\'ajout de l\'entrée:', error);
+      Alert.alert('Erreur', 'Erreur lors de l\'enregistrement des données.');
     }
+  
+    // Réinitialisation du formulaire après soumission
+    resetForm();
   };
 
   const resetForm = () => {
