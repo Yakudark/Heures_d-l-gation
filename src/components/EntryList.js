@@ -46,7 +46,7 @@ const EntryList = ({ entries, onEdit, onDelete }) => {
             <View style={styles.entryDetails}>
               <View style={styles.entryTime}>
                 <Text style={styles.entryTimeText}>
-                  {formatTime(entry.startTime)} - {formatTime(entry.endTime)}
+                  {formatTime(entry.start_time)} - {formatTime(entry.end_time)}
                 </Text>
                 <Text style={styles.commentText}>
                   {entry.comment || 'Pas de note'}

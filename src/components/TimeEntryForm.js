@@ -28,21 +28,21 @@ const DateTimeInput = ({ label, value, onPress, iconName }) => (
 // Ton composant principal TimeEntryForm reste inchangé
 const TimeEntryForm = ({
   date,
-  startTime,
-  endTime,
+  start_time,
+  end_time,
   type,
   comment,
   showDatePicker,
-  showStartTimePicker,
-  showEndTimePicker,
+  showstart_timePicker,
+  showend_timePicker,
   setDate,
-  setStartTime,
-  setEndTime,
+  setstart_time,
+  setend_time,
   setType,
   setComment,
   setShowDatePicker,
-  setShowStartTimePicker,
-  setShowEndTimePicker,
+  setShowstart_timePicker,
+  setShowend_timePicker,
   handleSubmit,
   editingEntry,
   cancelEditing,
@@ -59,11 +59,11 @@ const TimeEntryForm = ({
   };
 
   const validateEntry = () => {
-    if (!date || !startTime || !endTime) {
+    if (!date || !start_time || !end_time) {
       Alert.alert('Erreur', 'Veuillez remplir tous les champs obligatoires.');
       return false;
     }
-    if (startTime >= endTime) {
+    if (start_time >= end_time) {
       Alert.alert('Erreur', 'L’heure de fin doit être après l’heure de début.');
       return false;
     }
@@ -129,15 +129,15 @@ const TimeEntryForm = ({
 
           <DateTimeInput
             label="Début"
-            value={formatTime(startTime)}
-            onPress={() => setShowStartTimePicker(true)}
+            value={formatTime(start_time)}
+            onPress={() => setShowstart_timePicker(true)}
             iconName="time"
           />
 
           <DateTimeInput
             label="Fin"
-            value={formatTime(endTime)}
-            onPress={() => setShowEndTimePicker(true)}
+            value={formatTime(end_time)}
+            onPress={() => setShowend_timePicker(true)}
             iconName="time"
           />
 
@@ -167,26 +167,26 @@ const TimeEntryForm = ({
           />
         )}
 
-        {showStartTimePicker && (
+        {showstart_timePicker && (
           <DateTimePicker
-            value={startTime || new Date()}
+            value={start_time || new Date()}
             mode="time"
             is24Hour
             onChange={(event, selectedTime) => {
-              setShowStartTimePicker(false);
-              if (selectedTime) setStartTime(selectedTime);
+              setShowstart_timePicker(false);
+              if (selectedTime) setstart_time(selectedTime);
             }}
           />
         )}
 
-        {showEndTimePicker && (
+        {showend_timePicker && (
           <DateTimePicker
-            value={endTime || new Date()}
+            value={end_time || new Date()}
             mode="time"
             is24Hour
             onChange={(event, selectedTime) => {
-              setShowEndTimePicker(false);
-              if (selectedTime) setEndTime(selectedTime);
+              setShowend_timePicker(false);
+              if (selectedTime) setend_time(selectedTime);
             }}
           />
         )}

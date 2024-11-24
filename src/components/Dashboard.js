@@ -116,7 +116,7 @@ const Dashboard = ({
               </View>
 
               <Text style={styles.entryTime}>
-                {formatTime(entry.startTime)} - {formatTime(entry.endTime)}
+                {formatTime(entry.start_time)} - {formatTime(entry.end_time)}
               </Text>
               <Text style={styles.entryHours}>
                 {entry.hours.toFixed(1)} heures

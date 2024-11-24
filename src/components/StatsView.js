@@ -13,9 +13,9 @@ const StatsView = ({ entries, selectedMonth, selectedYear }) => {
     entries.forEach(entry => {
       const entryDate = new Date(entry.date);
       if (entryDate.getMonth() === selectedMonth && entryDate.getFullYear() === selectedYear) {
-        const startTime = new Date(entry.startTime);
-        const endTime = new Date(entry.endTime);
-        const hours = (endTime - startTime) / (1000 * 60 * 60);
+        const start_time = new Date(entry.start_time);
+        const end_time = new Date(entry.end_time);
+        const hours = (end_time - start_time) / (1000 * 60 * 60);
         
         if (entry.type === 'delegation') {
           totalDelegation += hours;

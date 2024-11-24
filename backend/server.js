@@ -38,12 +38,12 @@ app.get('/api/entries', async (req, res) => {
 });
 
 app.post('/api/entries', async (req, res) => {
-  const { date, startTime, endTime, type, comment } = req.body;
+  const { date, start_time, end_time, type, comment } = req.body;
   try {
     const { data, error } = await supabase
       .from('entries')
       .insert([
-        { date, start_time: startTime, end_time: endTime, type, comment }
+        { date, start_time: start_time, end_time: end_time, type, comment }
       ]);
 
     if (error) {
@@ -57,11 +57,11 @@ app.post('/api/entries', async (req, res) => {
 });
 
 app.put('/api/entries/:id', async (req, res) => {
-  const { date, startTime, endTime, type, comment } = req.body;
+  const { date, start_time, end_time, type, comment } = req.body;
   try {
     const { error } = await supabase
       .from('entries')
-      .update({ date, start_time: startTime, end_time: endTime, type, comment })
+      .update({ date, start_time: start_time, end_time: end_time, type, comment })
       .eq('id', req.params.id);
 
     if (error) {

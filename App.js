@@ -18,15 +18,22 @@ import {
 // Création d'un client Supabase avec les variables d'environnement
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = createClient(supabaseUrl, supabaseKey, {
+  // Désactive les fonctionnalités d'authentification si tu ne les utilises pas
+  auth: {
+    autoRefreshToken: false,  // Désactive l'auto-refresh du token
+    persistSession: false,    // Désactive la persistance de session
+    detectSessionInUrl: false // Désactive la détection de session dans l'URL
+  }
+});
 
 export default function App() {
   const [date, setDate] = useState(null);
-  const [startTime, setStartTime] = useState(null);
-  const [endTime, setEndTime] = useState(null);
+  const [start_time, setstart_time] = useState(null);
+  const [end_time, setend_time] = useState(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showStartTimePicker, setShowStartTimePicker] = useState(false);
-  const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+  const [showstart_timePicker, setShowstart_timePicker] = useState(false);
+  const [showend_timePicker, setShowend_timePicker] = useState(false);
   const [type, setType] = useState('delegation');
   const [monthlyHours, setMonthlyHours] = useState({ delegation: 0, chsct: 0 });
   const [entries, setEntries] = useState([]);
@@ -73,15 +80,15 @@ export default function App() {
   const startEditing = (entry) => {
     setEditingEntry(entry);
     setDate(new Date(entry.date));
-    setStartTime(new Date(entry.startTime));
-    setEndTime(new Date(entry.endTime));
+    setstart_time(new Date(entry.start_time));
+    setend_time(new Date(entry.end_time));
     setType(entry.type);
     setShowDashboard(false);
   };
 
   const handleSubmit = async () => {
     // Vérification des champs
-    if (!date || !startTime || !endTime) {
+    if (!date || !start_time || !end_time) {
       Alert.alert(
         'Erreur',
         'Veuillez sélectionner une date et des heures',
@@ -90,7 +97,7 @@ export default function App() {
       return;
     }
   
-    if (endTime.getTime() <= startTime.getTime()) {
+    if (end_time.getTime() <= start_time.getTime()) {
       Alert.alert(
         'Erreur',
         "L'heure de fin doit être supérieure à l'heure de début",
@@ -99,14 +106,14 @@ export default function App() {
       return;
     }
   
-    const diffHours = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
+    const diffHours = (end_time.getTime() - start_time.getTime()) / (1000 * 60 * 60);
   
     // Créer une nouvelle entrée
     const newEntry = {
       id: Date.now().toString(),
       date: date.toISOString(),
-      startTime: startTime.toISOString(),
-      endTime: endTime.toISOString(),
+      start_time: start_time.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+      end_time: end_time.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
       hours: diffHours,
       type,
     };
@@ -141,8 +148,8 @@ export default function App() {
 
   const resetForm = () => {
     setDate(null);
-    setStartTime(null);
-    setEndTime(null);
+    setstart_time(null);
+    setend_time(null);
     setType('delegation');
   };
 
@@ -218,26 +225,26 @@ export default function App() {
           {!showDashboard ? (
             <TimeEntryForm
               date={date}
-              startTime={startTime}
-              endTime={endTime}
+              start_time={start_time}
+              end_time={end_time}
               type={type}
               showDatePicker={showDatePicker}
-              showStartTimePicker={showStartTimePicker}
-              showEndTimePicker={showEndTimePicker}
+              showstart_timePicker={showstart_timePicker}
+              showend_timePicker={showend_timePicker}
               setDate={setDate}
-              setStartTime={setStartTime}
-              setEndTime={setEndTime}
+              setstart_time={setstart_time}
+              setend_time={setend_time}
               setType={setType}
               setShowDatePicker={setShowDatePicker}
-              setShowStartTimePicker={setShowStartTimePicker}
-              setShowEndTimePicker={setShowEndTimePicker}
+              setShowstart_timePicker={setShowstart_timePicker}
+              setShowend_timePicker={setShowend_timePicker}
               handleSubmit={handleSubmit}
               editingEntry={editingEntry}
               cancelEditing={() => {
                 setEditingEntry(null);
                 setDate(null);
-                setStartTime(null);
-                setEndTime(null);
+                setstart_time(null);
+                setend_time(null);
                 setType('delegation');
               }}
             />

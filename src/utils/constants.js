@@ -25,15 +25,15 @@ export const calculateTotalHours = (entriesList, selectedMonth, selectedYear) =>
     })
     .reduce(
       (totals, entry) => {
-        const startTime = new Date(entry.startTime);
-        const endTime = new Date(entry.endTime);
+        const start_time = new Date(entry.start_time);
+        const end_time = new Date(entry.end_time);
 
-        if (isNaN(startTime) || isNaN(endTime)) {
+        if (isNaN(start_time) || isNaN(end_time)) {
           console.warn(`Heure invalide dans l'entrée : ${JSON.stringify(entry)}`);
           return totals;
         }
 
-        const hours = (endTime - startTime) / (1000 * 60 * 60);
+        const hours = (end_time - start_time) / (1000 * 60 * 60);
 
         switch (entry.type) {
           case 'delegation':
