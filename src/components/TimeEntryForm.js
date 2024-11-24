@@ -49,13 +49,15 @@ const TimeEntryForm = ({
   onShowHistory,
 }) => {
   const formatDate = (date) => {
-    if (!(date instanceof Date)) return 'Date invalide';
+    if (!date) return 'Sélectionner une date';
+    if (!(date instanceof Date) || isNaN(date.getTime())) return 'Date invalide';
     return date.toLocaleDateString('fr-FR');
   };
 
-  const formatTime = (date) => {
-    if (!(date instanceof Date)) return 'Heure invalide';
-    return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  const formatTime = (time) => {
+    if (!time) return 'Sélectionner une heure';
+    if (!(time instanceof Date) || isNaN(time.getTime())) return 'Heure invalide';
+    return time.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
   };
 
   const validateEntry = () => {

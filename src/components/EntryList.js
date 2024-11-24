@@ -4,19 +4,40 @@ import { Ionicons } from '@expo/vector-icons';
 import { styles } from '../styles/styles';
 
 const EntryList = ({ entries, onEdit, onDelete }) => {
-  const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('fr-FR', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    });
+  const formatDate = (dateStr) => {
+    try {
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) return 'Date invalide';
+      return date.toLocaleDateString('fr-FR', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      });
+    } catch (error) {
+      console.error('Erreur de formatage de la date:', error);
+      return 'Date invalide';
+    }
   };
 
-  const formatTime = (date) => {
-    return new Date(date).toLocaleTimeString('fr-FR', {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  const formatTime = (timeStr) => {
+    try {
+      // Si le format est déjà HH:mm:ss, pas besoin de créer un objet Date
+      if (typeof timeStr === 'string' && timeStr.match(/^\d{2}:\d{2}:\d{2}$/)) {
+        const [hours, minutes] = timeStr.split(':');
+        return `${hours}:${minutes}`;
+      }
+
+      // Sinon, essayer de parser comme une date
+      const date = new Date(`1970-01-01T${timeStr}`);
+      if (isNaN(date.getTime())) return 'Heure invalide';
+      return date.toLocaleTimeString('fr-FR', {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      console.error('Erreur de formatage de l\'heure:', error);
+      return 'Heure invalide';
+    }
   };
 
   return (
