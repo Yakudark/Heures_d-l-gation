@@ -143,17 +143,20 @@ const TimeEntryForm = ({
             iconName="time"
           />
 
-          {/* Champ pour les commentaires */}
+          {/* Champ Note */}
           <View style={styles.inputContainer}>
             <Text style={styles.inputLabel}>Note</Text>
-            <TextInput
-              style={styles.commentInput}
-              placeholder="Ajouter une note"
-              value={comment}
-              onChangeText={setComment}
-              multiline
-              numberOfLines={3}
-            />
+            <View style={styles.inputWrapper}>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                placeholder="Ajouter une note (optionnel)"
+                value={comment}
+                onChangeText={setComment}
+                multiline
+                numberOfLines={3}
+                textAlignVertical="top"
+              />
+            </View>
           </View>
         </View>
 

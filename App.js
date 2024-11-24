@@ -30,6 +30,7 @@ export default function App() {
   const [editingEntry, setEditingEntry] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [comment, setComment] = useState('');
 
   useEffect(() => {
     loadData();
@@ -86,6 +87,7 @@ export default function App() {
     setstart_time(startTime);
     setend_time(endTime);
     setType(entry.type);
+    setComment(entry.comment || '');
     setEditingEntry(entry);
     
     // Redirection vers le formulaire
@@ -96,7 +98,8 @@ export default function App() {
       date: entryDate,
       start_time: startTime,
       end_time: endTime,
-      type: entry.type
+      type: entry.type,
+      comment: entry.comment
     });
   };
 
@@ -168,7 +171,7 @@ export default function App() {
       end_time: formatTime(end_time),
       hours: parseFloat(diffHours.toFixed(2)),
       type,
-      comment: editingEntry?.comment || ''
+      comment: comment
     };
 
     console.log('Envoi de la nouvelle entrée:', newEntry);
@@ -232,6 +235,7 @@ export default function App() {
     setstart_time(null);
     setend_time(null);
     setType('delegation');
+    setComment('');
   };
 
   const deleteEntry = async (id) => {
@@ -356,6 +360,8 @@ export default function App() {
                 setend_time(null);
                 setType('delegation');
               }}
+              comment={comment}
+              setComment={setComment}
             />
           ) : (
             <PeriodSelector

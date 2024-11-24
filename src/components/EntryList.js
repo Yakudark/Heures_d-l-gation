@@ -69,26 +69,27 @@ const EntryList = ({ entries, onEdit, onDelete }) => {
                 <Text style={styles.entryTimeText}>
                   {formatTime(entry.start_time)} - {formatTime(entry.end_time)}
                 </Text>
-                <Text style={styles.commentText}>
-                  {entry.comment || 'Pas de note'}
+                <Text style={styles.hoursText}>
+                  {entry.hours}h
                 </Text>
               </View>
-              <View style={[
-                styles.entryType,
-                entry.type === 'delegation' ? styles.delegationType :
-                entry.type === 'chsct' ? styles.chsctType :
-                styles.reunionType
-              ]}>
+
+              <View style={styles.typeContainer}>
                 <Text style={[
-                  styles.entryTypeText,
-                  entry.type === 'delegation' ? styles.delegationTypeText :
-                  entry.type === 'chsct' ? styles.chsctTypeText :
-                  styles.reunionTypeText
+                  styles.typeText,
+                  entry.type === 'delegation' && styles.delegationType,
+                  entry.type === 'chsct' && styles.chsctType,
+                  entry.type === 'reunion' && styles.reunionType,
                 ]}>
-                  {entry.type === 'delegation' ? 'Délégation' :
-                   entry.type === 'chsct' ? 'CHSCT' : 'Réunion'}
+                  {entry.type.toUpperCase()}
                 </Text>
               </View>
+
+              {entry.comment && (
+                <Text style={styles.commentText}>
+                  Note : {entry.comment}
+                </Text>
+              )}
             </View>
           </View>
         ))}

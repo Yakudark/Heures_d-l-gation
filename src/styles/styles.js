@@ -143,50 +143,57 @@ export const styles = StyleSheet.create({
     padding: 5,
   },
   entryDetails: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flex: 1,
+    marginTop: 8,
   },
   entryTime: {
-    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
   },
   entryTimeText: {
-    fontSize: 15,
-    color: '#666',
+    fontSize: 16,
+    color: '#333',
+  },
+  hoursText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#007AFF',
+  },
+  typeContainer: {
+    marginBottom: 8,
+  },
+  typeText: {
+    fontSize: 14,
+    fontWeight: '600',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 4,
+    overflow: 'hidden',
+    textAlign: 'center',
+    alignSelf: 'flex-start',
+  },
+  delegationType: {
+    backgroundColor: '#E3F2FD',
+    color: '#1976D2',
+  },
+  chsctType: {
+    backgroundColor: '#E8F5E9',
+    color: '#388E3C',
+  },
+  reunionType: {
+    backgroundColor: '#FFF3E0',
+    color: '#F57C00',
   },
   commentText: {
     fontSize: 14,
     color: '#666',
-    marginTop: 5,
     fontStyle: 'italic',
-    marginBottom: 5,
-  },
-  entryType: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 15,
-  },
-  entryTypeText: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  delegationType: {
-    backgroundColor: '#E3F2FD',
-  },
-  delegationTypeText: {
-    color: '#007AFF',
-  },
-  chsctType: {
-    backgroundColor: '#E8F5E9',
-  },
-  chsctTypeText: {
-    color: '#34C759',
-  },
-  reunionType: {
-    backgroundColor: '#EDE7F6',
-  },
-  reunionTypeText: {
-    color: '#5856D6',
+    marginTop: 4,
+    paddingTop: 4,
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
   },
   badgeContainer: {
     paddingHorizontal: 8,
@@ -324,8 +331,18 @@ export const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
     fontSize: 16,
-    paddingVertical: 10,
+    color: '#333',
+  },
+  textArea: {
+    height: 80,
+    textAlignVertical: 'top',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    backgroundColor: '#fff',
   },
   commentInput: {
     flex: 1,
