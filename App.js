@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { createClient } from '@supabase/supabase-js'; // Importation de Supabase
 import TimeEntryForm from './src/components/TimeEntryForm';
 import PeriodSelector from './src/components/PeriodSelector';
 import HistoryView from './src/components/HistoryView';
 import HoursSummary from './src/components/HoursSummary';
 import { styles } from './src/styles/styles';
+import { supabase } from './src/config/supabase';
 import {
   STORAGE_KEY,
   ENTRIES_KEY,
@@ -14,18 +14,6 @@ import {
   CHSCT_HOURS,
   calculateTotalHours
 } from './src/utils/constants';
-
-// Création d'un client Supabase avec les variables d'environnement
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey, {
-  // Désactive les fonctionnalités d'authentification si tu ne les utilises pas
-  auth: {
-    autoRefreshToken: false,  // Désactive l'auto-refresh du token
-    persistSession: false,    // Désactive la persistance de session
-    detectSessionInUrl: false // Désactive la détection de session dans l'URL
-  }
-});
 
 export default function App() {
   const [date, setDate] = useState(null);
@@ -108,32 +96,50 @@ export default function App() {
   
     const diffHours = (end_time.getTime() - start_time.getTime()) / (1000 * 60 * 60);
   
-    // Créer une nouvelle entrée
-    const newEntry = {
-      id: Date.now().toString(),
-      date: date.toISOString(),
-      start_time: start_time.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-      end_time: end_time.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-      hours: diffHours,
-      type,
+    // Formatage des dates et heures pour Supabase
+    const formatDate = (date) => {
+      return date.toISOString().split('T')[0]; // Retourne uniquement la partie date "YYYY-MM-DD"
     };
-  
-    // Ajouter la nouvelle entrée à l'historique
-    const newEntries = [...entries, newEntry];
-    const newHours = calculateTotalHours(newEntries, selectedMonth, selectedYear);
-    setEntries(newEntries);
-    setMonthlyHours(newHours);
-    saveData(newHours, newEntries);
+
+    const formatTime = (date) => {
+      return date.toLocaleTimeString('fr-FR', { 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        second: '2-digit',
+        hour12: false 
+      });
+    };
+
+    // Créer une nouvelle entrée sans ID (Supabase le générera)
+    const newEntry = {
+      date: formatDate(date),
+      start_time: formatTime(start_time),
+      end_time: formatTime(end_time),
+      hours: parseFloat(diffHours.toFixed(2)), // Arrondir à 2 décimales
+      type,
+      comment: '' // Ajouter un champ comment vide par défaut
+    };
+
+    console.log('Envoi de la nouvelle entrée:', newEntry);
   
     try {
       // Envoi des données à Supabase
       const { data, error } = await supabase
-        .from('entries')  // Nom de la table dans Supabase
-        .insert([newEntry]);  // Insère un tableau d'objets, ici avec une seule entrée
+        .from('entries')
+        .insert([newEntry])
+        .select()
+        .single();
   
       if (error) {
         throw error;
       }
+  
+      // Utiliser l'entrée retournée par Supabase (avec l'ID généré)
+      const newEntries = [...entries, data];
+      const newHours = calculateTotalHours(newEntries, selectedMonth, selectedYear);
+      setEntries(newEntries);
+      setMonthlyHours(newHours);
+      saveData(newHours, newEntries);
   
       console.log('Entrée ajoutée avec succès:', data);
       Alert.alert('Succès', 'Les heures ont été enregistrées');
@@ -153,7 +159,7 @@ export default function App() {
     setType('delegation');
   };
 
-  const deleteEntry = (id) => {
+  const deleteEntry = async (id) => {
     Alert.alert(
       'Confirmation',
       'Voulez-vous vraiment supprimer cette entrée ?',
@@ -162,12 +168,40 @@ export default function App() {
         {
           text: 'Supprimer',
           style: 'destructive',
-          onPress: () => {
-            const newEntries = entries.filter(entry => entry.id !== id);
-            const newHours = calculateTotalHours(newEntries, selectedMonth, selectedYear);
-            setEntries(newEntries);
-            setMonthlyHours(newHours);
-            saveData(newHours, newEntries);
+          onPress: async () => {
+            try {
+              console.log('Tentative de suppression de l\'entrée avec ID:', id);
+              
+              // Suppression de l'entrée dans Supabase
+              const { data, error } = await supabase
+                .from('entries')
+                .delete()
+                .eq('id', id)
+                .select();
+
+              if (error) {
+                console.error('Erreur Supabase lors de la suppression:', error);
+                throw error;
+              }
+
+              console.log('Réponse Supabase après suppression:', data);
+
+              // Mise à jour de l'état local
+              const updatedEntries = entries.filter(entry => entry.id !== id);
+              setEntries(updatedEntries);
+              
+              // Recalcul des heures
+              const newHours = calculateTotalHours(updatedEntries, selectedMonth, selectedYear);
+              setMonthlyHours(newHours);
+              
+              // Sauvegarde locale
+              saveData(newHours, updatedEntries);
+              
+              Alert.alert('Succès', 'L\'entrée a été supprimée');
+            } catch (error) {
+              console.error('Erreur lors de la suppression:', error);
+              Alert.alert('Erreur', 'Erreur lors de la suppression de l\'entrée');
+            }
           }
         }
       ]
@@ -261,6 +295,7 @@ export default function App() {
       ) : (
         <HistoryView
           entries={entries}
+          setEntries={setEntries}
           selectedMonth={selectedMonth}
           selectedYear={selectedYear}
           monthlyHours={monthlyHours}

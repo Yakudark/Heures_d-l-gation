@@ -36,7 +36,7 @@ const EntryList = ({ entries, onEdit, onDelete }) => {
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.actionButton}
-                  onPress={() => onDelete(entry.id)}
+                  onPress={() => onDelete(entry.id)} 
                 >
                   <Ionicons name="trash" size={20} color="#FF3B30" />
                 </TouchableOpacity>
@@ -74,5 +74,6 @@ const EntryList = ({ entries, onEdit, onDelete }) => {
     </View>
   );
 };
+
 
 export default EntryList;

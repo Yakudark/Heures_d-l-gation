@@ -5,6 +5,7 @@ import { styles } from '../styles/styles';
 
 const Dashboard = ({
   entries,
+  setEntries,
   monthlyHours,
   selectedMonth,
   selectedYear,
